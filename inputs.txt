@@ -1,0 +1,4 @@
+reset()
+waitfor(100)
+mouse_input(55)
+waitfor(1000, True)
