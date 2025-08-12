@@ -18,3 +18,12 @@ Available functions:
 	
 	mouse_input(angle_deg, duration=0.005, dist=500):
 		0 is straight up, 90 is straight to the right, ect.
+		
+	time.sleep(ms):
+		Allows for waiting, should only ever be used when menuing.
+	
+	mouse.move(x,y):
+		Moves mouse to position on screen, only used for menuing.
+	
+	mouse.click():
+		Clicks mouse, only used for menuing.
