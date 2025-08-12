@@ -8,6 +8,7 @@ import psutil
 import pydirectinput
 import time
 import os
+import sys
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 time_filepath = os.path.join(current_dir, 'time.txt')
@@ -151,6 +152,7 @@ if hwnd_target:
     height = bottom - top
 else:
     print("game not open")
+    sys.exit()
 
 
 GetAsyncKeyState = ctypes.windll.user32.GetAsyncKeyState
@@ -160,7 +162,6 @@ def key_pressed(vk_code):
 
 def mouse_input(angle_deg, duration=0.005, dist=500):
     mouse.move(width//2,height//2, absolute=False)
-    mouse.press()
     
     angle = math.radians(angle_deg-90)
 
@@ -177,6 +178,7 @@ def mouse_input(angle_deg, duration=0.005, dist=500):
 pm = pymem.Pymem("Frog Flinger")
 def waitfor(ms, pause=False):
     done = False
+    timeoutTimer = time.perf_counter()
     while not done:
         with open(time_filepath, 'r') as file:
             curtime = file.read().strip()
@@ -188,6 +190,9 @@ def waitfor(ms, pause=False):
                 pydirectinput.press('esc')
             done = True
             print(f"done at {int(curtime)/1000}")
+        if time.perf_counter() - timeoutTimer > 5:
+            print("took too long")
+            break
 
 def reset():
     mouse.move(950,550)
@@ -208,26 +213,32 @@ def execute_instructions_from_file(filename):
                 print(f"Error executing line: {line}\n{e}")
     
 while True:
-    user32 = ctypes.windll.user32
-    GetForegroundWindow = user32.GetForegroundWindow
-    GetWindowTextLengthW = user32.GetWindowTextLengthW
-    GetWindowTextW = user32.GetWindowTextW
+    while True:
+        user32 = ctypes.windll.user32
+        GetForegroundWindow = user32.GetForegroundWindow
+        GetWindowTextLengthW = user32.GetWindowTextLengthW
+        GetWindowTextW = user32.GetWindowTextW
 
-    hwnd = GetForegroundWindow()
-    length = GetWindowTextLengthW(hwnd)
-    buffer = ctypes.create_unicode_buffer(length + 1)
-    GetWindowTextW(hwnd, buffer, length + 1)
-    
-    
-    
-    
-    if key_pressed(key['SHIFT']) and "Frog" in buffer.value:
-        with open(redos_filepath, 'r') as f:
-            content = f.read().strip()
-            current_redos = int(content) if content else 0
-        new_redos = current_redos + 1
-        with open(redos_filepath, 'w') as f:
-            f.write(str(new_redos))
+        hwnd = GetForegroundWindow()
+        length = GetWindowTextLengthW(hwnd)
+        buffer = ctypes.create_unicode_buffer(length + 1)
+        GetWindowTextW(hwnd, buffer, length + 1)
         
         
-        execute_instructions_from_file(inputs_filepath)
+        
+        
+        shift_pressed = key_pressed(key['SHIFT']) and "Frog" in buffer.value
+
+        if shift_pressed and not shift_was_pressed:
+            # Only trigger when Shift *just* got pressed
+            with open(redos_filepath, 'r') as f:
+                content = f.read().strip()
+                current_redos = int(content) if content else 0
+            new_redos = current_redos + 1
+            with open(redos_filepath, 'w') as f:
+                f.write(str(new_redos))
+            execute_instructions_from_file(inputs_filepath)
+
+        shift_was_pressed = shift_pressed
+        if key_pressed(key['F8']):
+            sys.exit()
