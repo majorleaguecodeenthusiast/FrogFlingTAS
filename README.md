@@ -26,4 +26,4 @@ Available functions:
 		Moves mouse to position on screen, only used for menuing.
 	
 	mouse.click():
-		Clicks mouse, only used for menuing.
+		Clicks mouse, only used for menuing. 
